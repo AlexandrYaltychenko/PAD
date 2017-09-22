@@ -1,10 +1,12 @@
-import kotlinx.coroutines.experimental.CommonPool
+import com.google.gson.Gson
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.newSingleThreadContext
+import kotlinx.coroutines.experimental.runBlocking
 import protocol.ClientType
-import protocol.Encoder
 import protocol.Message
+import util.decode
+import util.encode
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
@@ -17,21 +19,32 @@ fun main(args: Array<String>) {
     runServer()
 }
 
+fun backupQueue(){
+    runBlocking {
+        println("BACKUPING...")
+    }
+}
+
 suspend fun handleClient(client: Socket) {
     println("handling client...")
     val reader = BufferedReader(InputStreamReader(client.inputStream))
     val writer = PrintWriter(client.outputStream)
-    val msg = Encoder.decode(reader.readLine())
+    val msg = reader.readLine().decode()
     if (msg.clientType == ClientType.RECEIVER) {
         println("CONNECTED RECEIVER " + msg.clientUid)
         println("SENT MSG " + msg.msg)
+        try {
+            println("QUEUE IS " + queue.encode())
+        } catch (e: Exception) {
+            println(e.message)
+        }
         if (queue.isEmpty)
             writer.println(Message(clientType = ClientType.SERVER, msg = "IDLE"))
         else
-            writer.println(Encoder.encode(queue.receive()))
+            writer.println(queue.receive().encode())
         writer.flush()
-    }
-    else if (msg.clientType == ClientType.SENDER) {
+        println("QUEUE PROCESSED!")
+    } else if (msg.clientType == ClientType.SENDER) {
         println("CONNECTED SENDER " + msg.clientUid)
         println("GOT MSG " + msg.msg)
         queue.send(msg)

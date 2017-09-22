@@ -3,8 +3,8 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import protocol.ClientType
-import protocol.Encoder
 import protocol.Message
+import util.encode
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
@@ -21,7 +21,7 @@ suspend fun processTask() {
         val reader = BufferedReader(InputStreamReader(client.inputStream))
         val writer = PrintWriter(client.outputStream)
         val msg = Message(ClientType.RECEIVER,clientUid = clientUid)
-        writer.println(Encoder.encode(msg))
+        writer.println(msg.encode())
         writer.flush()
         val task = reader.readLine()
         println("PROCESSED " +task)

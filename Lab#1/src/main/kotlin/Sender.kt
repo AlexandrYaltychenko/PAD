@@ -3,8 +3,8 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import protocol.ClientType
-import protocol.Encoder
 import protocol.Message
+import util.encode
 import java.io.PrintWriter
 import java.net.Socket
 import java.util.*
@@ -16,7 +16,7 @@ suspend fun makeTask() {
     val client = Socket("127.0.0.1", 14141)
     val writer = PrintWriter(client.outputStream)
     val msg = Message(clientType = ClientType.SENDER, clientUid = clientUid,msg = UUID.randomUUID().toString())
-    writer.println(Encoder.encode(msg))
+    writer.println(msg.encode())
     writer.println(uuid)
     writer.flush()
     writer.close()
